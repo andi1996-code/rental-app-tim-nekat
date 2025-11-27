@@ -3,11 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -59,6 +61,52 @@ class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the password for authentication.
+     * Laravel looks for 'password' but we use 'password_hash'
+     */
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
+
+    /**
+     * Get the name of the password attribute.
+     * This tells Laravel to use 'password_hash' instead of 'password'
+     */
+    public function getAuthPasswordName()
+    {
+        return 'password_hash';
+    }
+
+    /**
+     * Get the user's name for Filament.
+     * Filament uses this method to display the user's name in the UI.
+     */
+    public function getFilamentName(): string
+    {
+        return $this->full_name ?? $this->email;
+    }
+
+    /**
+     * Get the name attribute (accessor).
+     * This maps the 'name' attribute to 'full_name' for Filament compatibility.
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->full_name ?? $this->email;
+    }
+
+    /**
+     * Determine if the user can access the Filament panel.
+     * Only admin and super_admin users can access the admin panel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Allow admin and super_admin to access the panel
+        return in_array($this->user_type, ['admin', 'super_admin']) && $this->is_active;
     }
 
     // Relationships

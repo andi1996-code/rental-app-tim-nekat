@@ -15,11 +15,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->command->info('🌱 Starting database seeding...');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Seed in order (karena ada foreign key dependencies)
+        $this->call([
+            LocationSeeder::class,
+            CarCategorySeeder::class,
+            UserSeeder::class,
+            // CarSeeder::class, // Uncomment jika sudah ada isinya
         ]);
+
+        $this->command->info('✅ Database seeding completed!');
     }
 }
