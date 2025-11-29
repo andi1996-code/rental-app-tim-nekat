@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\CustomerResource\Pages;
+use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,26 +13,26 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class UserResource extends Resource
+class CustomerResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationLabel = 'Staff & Admin';
+    protected static ?string $navigationLabel = 'Customers';
 
-    protected static ?string $navigationGroup = 'User Management';
+    protected static ?string $navigationGroup = 'Customer Management';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'Staff';
+    protected static ?string $modelLabel = 'Customer';
 
-    protected static ?string $pluralModelLabel = 'Staff & Admin';
+    protected static ?string $pluralModelLabel = 'Customers';
 
-    // Filter hanya user dengan tipe admin, super_admin, location_manager
+    // Filter hanya user dengan tipe customer
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereIn('user_type', ['admin', 'super_admin', 'location_manager']);
+        return parent::getEloquentQuery()->where('user_type', 'customer');
     }
 
     public static function form(Form $form): Form
@@ -60,15 +60,9 @@ class UserResource extends Resource
                             ->dehydrateStateUsing(fn ($state) => !empty($state) ? bcrypt($state) : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->maxLength(255),
-                        Forms\Components\Select::make('user_type')
-                            ->label('Tipe User')
-                            ->options([
-                                'admin' => 'Admin',
-                                'super_admin' => 'Super Admin',
-                                'location_manager' => 'Location Manager',
-                            ])
-                            ->required()
-                            ->default('admin'),
+                        Forms\Components\Hidden::make('user_type')
+                            ->default('customer')
+                            ->dehydrated(),
                     ])
                     ->columns(2),
 
@@ -81,10 +75,12 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('phone_number')
                             ->label('Nomor Telepon')
                             ->tel()
+                            ->required()
                             ->maxLength(20),
                         Forms\Components\DatePicker::make('date_of_birth')
                             ->label('Tanggal Lahir')
                             ->displayFormat('d/m/Y')
+                            ->required()
                             ->native(false),
                         Forms\Components\FileUpload::make('profile_image')
                             ->label('Foto Profile')
@@ -95,7 +91,63 @@ class UserResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Status & Pengaturan')
+                Forms\Components\Section::make('Informasi SIM')
+                    ->schema([
+                        Forms\Components\TextInput::make('driver_license_number')
+                            ->label('Nomor SIM')
+                            ->required()
+                            ->maxLength(50),
+                        Forms\Components\FileUpload::make('driver_license_image')
+                            ->label('Foto SIM')
+                            ->image()
+                            ->directory('license-images')
+                            ->required()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Profil Customer')
+                    ->relationship('customerProfile')
+                    ->schema([
+                        Forms\Components\TextInput::make('address')
+                            ->label('Alamat')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('city')
+                            ->label('Kota')
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('province')
+                            ->label('Provinsi')
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('postal_code')
+                            ->label('Kode Pos')
+                            ->maxLength(10),
+                        Forms\Components\TextInput::make('emergency_contact_name')
+                            ->label('Nama Kontak Darurat')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('emergency_contact_phone')
+                            ->label('Telepon Kontak Darurat')
+                            ->tel()
+                            ->maxLength(20),
+                        Forms\Components\Select::make('membership_level')
+                            ->label('Level Membership')
+                            ->options([
+                                'regular' => 'Regular',
+                                'silver' => 'Silver',
+                                'gold' => 'Gold',
+                            ])
+                            ->default('regular'),
+                        Forms\Components\TextInput::make('rating')
+                            ->label('Rating')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(5)
+                            ->step(0.1)
+                            ->default(5.0),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Status')
                     ->schema([
                         Forms\Components\Toggle::make('is_verified')
                             ->label('Terverifikasi')
@@ -103,18 +155,12 @@ class UserResource extends Resource
                         Forms\Components\Toggle::make('is_active')
                             ->label('Aktif')
                             ->default(true),
-                        Forms\Components\Select::make('managed_location_id')
-                            ->label('Lokasi yang Dikelola')
-                            ->relationship('managedLocation', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->visible(fn (Forms\Get $get) => in_array($get('user_type'), ['location_manager', 'admin'])),
                         Forms\Components\DateTimePicker::make('last_login')
                             ->label('Login Terakhir')
                             ->disabled()
                             ->dehydrated(false),
                     ])
-                    ->columns(2),
+                    ->columns(3),
             ]);
     }
 
@@ -125,7 +171,7 @@ class UserResource extends Resource
                 Tables\Columns\ImageColumn::make('profile_image')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl(fn () => 'https://ui-avatars.com/api/?name=User&color=7F9CF5&background=EBF4FF'),
+                    ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->full_name ?? 'User') . '&color=7F9CF5&background=EBF4FF'),
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('Nama Lengkap')
                     ->searchable()
@@ -135,57 +181,71 @@ class UserResource extends Resource
                     ->searchable()
                     ->copyable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('user_type')
-                    ->label('Tipe')
-                    ->colors([
-                        'primary' => 'customer',
-                        'success' => 'admin',
-                        'danger' => 'super_admin',
-                        'warning' => 'location_manager',
-                    ])
-                    ->icons([
-                        'heroicon-m-user' => 'customer',
-                        'heroicon-m-shield-check' => 'admin',
-                        'heroicon-m-shield-exclamation' => 'super_admin',
-                        'heroicon-m-map-pin' => 'location_manager',
-                    ]),
                 Tables\Columns\TextColumn::make('phone_number')
                     ->label('Telepon')
                     ->searchable()
-                    ->toggleable(),
+                    ->icon('heroicon-m-phone'),
+                Tables\Columns\BadgeColumn::make('customerProfile.membership_level')
+                    ->label('Membership')
+                    ->colors([
+                        'secondary' => 'regular',
+                        'info' => 'silver',
+                        'warning' => 'gold',
+                    ])
+                    ->formatStateUsing(fn ($state) => $state ? ucfirst($state) : 'Regular')
+                    ->default('Regular'),
+                Tables\Columns\TextColumn::make('customerProfile.total_rentals')
+                    ->label('Total Rental')
+                    ->numeric()
+                    ->default(0)
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('customerProfile.total_spent')
+                    ->label('Total Pengeluaran')
+                    ->money('IDR')
+                    ->default(0)
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('customerProfile.rating')
+                    ->label('Rating')
+                    ->badge()
+                    ->color(fn ($state) => match(true) {
+                        $state >= 4.5 => 'success',
+                        $state >= 3.5 => 'warning',
+                        $state >= 2.5 => 'info',
+                        default => 'danger',
+                    })
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 1) . ' ⭐' : '-')
+                    ->default(5.0),
                 Tables\Columns\IconColumn::make('is_verified')
                     ->label('Verified')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-x-circle')
-                    ->toggleable(),
+                    ->trueColor('success')
+                    ->falseColor('warning'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
                     ->trueColor('success')
-                    ->falseColor('danger')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('managedLocation.name')
-                    ->label('Managed Location')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->falseColor('danger'),
                 Tables\Columns\TextColumn::make('last_login')
                     ->label('Last Login')
                     ->dateTime('d M Y, H:i')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label('Terdaftar')
                     ->dateTime('d M Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('user_type')
-                    ->label('Tipe User')
+                Tables\Filters\SelectFilter::make('membership_level')
+                    ->label('Level Membership')
+                    ->relationship('customerProfile', 'membership_level')
                     ->options([
-                        'admin' => 'Admin',
-                        'super_admin' => 'Super Admin',
-                        'location_manager' => 'Location Manager',
+                        'regular' => 'Regular',
+                        'silver' => 'Silver',
+                        'gold' => 'Gold',
                     ]),
                 Tables\Filters\TernaryFilter::make('is_verified')
                     ->label('Verified')
@@ -221,9 +281,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => Pages\ListCustomers::route('/'),
+            'create' => Pages\CreateCustomer::route('/create'),
+            'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
     }
 }
