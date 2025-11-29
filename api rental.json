@@ -512,7 +512,7 @@
       "name": "Dashboard",
       "item": [
         {
-          "name": "Customer Dashboard Summary",
+          "name": "Customer Dashboard (Main)",
           "request": {
             "method": "GET",
             "header": [
@@ -524,7 +524,200 @@
               "host": ["{{base_url}}"],
               "path": ["api", "dashboard"]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Active Rental Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/active-rental",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "active-rental"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upcoming Rentals",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/upcoming-rentals",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "upcoming-rentals"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recommended Cars for Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/recommended-cars?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "recommended-cars"],
+              "query": [
+                { "key": "limit", "value": "10", "description": "Number of cars to return (default: 10)" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recent Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/recent-transactions?limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "recent-transactions"],
+              "query": [
+                { "key": "limit", "value": "5", "description": "Number of transactions to return (default: 5)" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Active Promos for Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/promos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "promos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Membership Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/membership",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "membership"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Quick Actions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/quick-actions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "quick-actions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rental History Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/rental-history?period=30",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "rental-history"],
+              "query": [
+                { "key": "period", "value": "30", "description": "Number of days to look back (default: 30)" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Spending Chart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/spending-chart?months=6",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "spending-chart"],
+              "query": [
+                { "key": "months", "value": "6", "description": "Number of months to display (default: 6)" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Popular Cars Nearby",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/popular-cars?location_id=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "popular-cars"],
+              "query": [
+                { "key": "location_id", "value": "1", "description": "Location ID (optional)" },
+                { "key": "limit", "value": "5", "description": "Number of cars (default: 5)" }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
@@ -532,11 +725,13 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8000"
+      "value": "https://renmob.idnacode.my.id",
+      "description": "Local development server. Change to production URL when deploying."
     },
     {
       "key": "token",
-      "value": ""
+      "value": "",
+      "description": "Authentication token. Will be automatically set after login."
     }
   ]
 }

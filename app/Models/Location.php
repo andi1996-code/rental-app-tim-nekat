@@ -12,6 +12,7 @@ class Location extends Model
         'city',
         'province',
         'phone_number',
+        'operating_hours',
         'email',
         'latitude',
         'longitude',

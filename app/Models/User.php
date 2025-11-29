@@ -8,11 +8,12 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +23,9 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'uuid',
         'email',
+        'password',
         'password_hash',
+        'role',
         'user_type',
         'full_name',
         'phone_number',
@@ -42,6 +45,7 @@ class User extends Authenticatable implements FilamentUser
      * @var list<string>
      */
     protected $hidden = [
+        'password',
         'password_hash',
         'remember_token',
     ];
@@ -117,7 +121,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function rentals()
     {
-        return $this->hasMany(Rental::class, 'customer_id');
+        return $this->hasMany(Rental::class, 'user_id');
     }
 
     public function maintenances()
